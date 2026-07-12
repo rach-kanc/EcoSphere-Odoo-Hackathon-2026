@@ -195,15 +195,15 @@ XP thresholds auto-unlock **Badges**. Accumulated XP can be redeemed for **Rewar
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Authentication, Users, Departments, Categories | 🔲 Planned |
-| 2 | Environmental Module, Carbon Calculations, Goals | 🔲 Planned |
-| 3 | Social Module, CSR, Employee Participation | 🔲 Planned |
-| 4 | Governance Module, Policies, Audits, Compliance | 🔲 Planned |
-| 5 | Gamification (Challenges, Badges, Rewards, Leaderboard) | 🔲 Planned |
-| 6 | Dashboard (Live KPIs, Charts, Rankings) | 🔲 Planned |
+| 1 | Authentication, Users, Departments, Categories | 🟡 Partial/Stubbed |
+| 2 | Environmental Module, Carbon Calculations, Goals | 🟡 Partial/Stubbed |
+| 3 | Social Module, CSR, Employee Participation | 🟡 Partial/Stubbed |
+| 4 | Governance Module, Policies, Audits, Compliance | ✅ Completed (UI) |
+| 5 | Gamification (Challenges, Badges, Rewards, Leaderboard) | ✅ Completed |
+| 6 | Dashboard (Live KPIs, Charts, Rankings) | ✅ Completed |
 | 7 | Reports & Analytics (Pre-built + Custom Builder) | 🔲 Planned |
 | 8 | Notifications (In-App + Email) | 🔲 Planned |
-| 9 | Optimization, Testing, Deployment | 🔲 Planned |
+| 9 | Optimization, Testing, CI/CD Deployment (Vercel/Render) | ✅ Completed |
 
 ---
 
