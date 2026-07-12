@@ -6,20 +6,28 @@ from app.models.policy_acknowledgement import PolicyAcknowledgement
 from app.models.audit import Audit
 from app.models.compliance_issue import ComplianceIssue
 from app.models.emission_factor import (
-    ActivityType,
-    EmissionFactor,
-    FactorStatus,
+      ActivityType,
+      EmissionFactor,
+      FactorStatus,
+)
+from app.models.category import (
+      Category,
+      CategoryStatus,
+      CategoryType,
 )
 
 __all__ = [
-    "Base",
-    "User",
-    "Department",
-    "ESGPolicy",
-    "PolicyAcknowledgement",
-    "Audit",
-    "ComplianceIssue",
-    "ActivityType",
-    "EmissionFactor",
-    "FactorStatus",
+      "Base",
+      "User",
+      "Department",
+      "ESGPolicy",
+      "PolicyAcknowledgement",
+      "Audit",
+      "ComplianceIssue",
+      "ActivityType",
+      "EmissionFactor",
+      "FactorStatus",
+      "Category",
+      "CategoryStatus",
+      "CategoryType",
 ]
