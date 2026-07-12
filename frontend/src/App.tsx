@@ -51,7 +51,7 @@ import EnvironmentalDashboardTab from "./components/EnvironmentalDashboardTab";
 import ManualCarbonEntryModal from "./components/ManualCarbonEntryModal";
 import { carbonTransactionsApi } from "./api/carbonTransactions";
 import { environmentalGoalsApi } from "./api/environmentalGoals";
-import AuthScreen from "./features/auth/AuthScreen";
+
 // TypeScript types from local types file
 import {
   User,
@@ -441,7 +441,6 @@ function LandingPage({ onEnterDashboard }: { onEnterDashboard: () => void }) {
 
 export default function App() {
   const [showLanding, setShowLanding] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem("ecosphere_token"));
   const [isLightMode, setIsLightMode] = useState(() => localStorage.getItem("theme") === "light");
   const [activeTab, setActiveTab] = useState<"summary" | "environmental" | "emission_factors" | "automation" | "department_carbon" | "social" | "governance" | "gamification">("summary");
 
@@ -507,15 +506,8 @@ export default function App() {
     setUser((prev) => ({ ...prev, xp_points: prev.xp_points + xp }));
   };
 
-  const handleLogin = (token: string, loggedInUser: User) => {
-    localStorage.setItem("ecosphere_token", token);
-    setUser(loggedInUser);
-    setIsAuthenticated(true);
-  };
-
   const handleLogout = () => {
-    localStorage.removeItem("ecosphere_token");
-    setIsAuthenticated(false);
+    setShowLanding(true);
   };
   // --- Governance score (live) ---
   const activePolicies = policies.filter((p) => p.status === "active");
@@ -530,10 +522,6 @@ export default function App() {
 
   if (showLanding) {
     return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
-  }
-
-  if (!isAuthenticated) {
-    return <AuthScreen onLogin={handleLogin} />;
   }
 
   return (

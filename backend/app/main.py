@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401  (register models on Base.metadata)
-from app.api.v1.auth import router as auth_router
+
 from app.api.v1.auto_calculation import router as auto_calculation_router
 from app.api.v1.carbon_transactions import router as carbon_transactions_router
 from app.api.v1.carbon_analytics import router as carbon_analytics_router
@@ -29,7 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(auth_router, prefix="/api/v1")
+
 app.include_router(auto_calculation_router, prefix="/api/v1")
 app.include_router(carbon_transactions_router, prefix="/api/v1")
 app.include_router(carbon_analytics_router, prefix="/api/v1")
