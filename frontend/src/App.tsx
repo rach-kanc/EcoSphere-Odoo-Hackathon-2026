@@ -267,6 +267,14 @@ export default function App() {
     1: true
   });
 
+  // Governance Modal States
+  const [selectedPolicyForAck, setSelectedPolicyForAck] = useState<ESGPolicy | null>(null);
+  const [signatureName, setSignatureName] = useState("");
+  const [signatureChecked, setSignatureChecked] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+
   const handleLogEmissions = (e: React.FormEvent) => {
     e.preventDefault();
     if (!logQuantity || isNaN(Number(logQuantity))) return;
@@ -781,8 +789,17 @@ export default function App() {
                           </div>
 
                           <button
-                            onClick={() => togglePolicyAck(p.id)}
+                            onClick={() => {
+                              if (isAcked) {
+                                togglePolicyAck(p.id);
+                              } else {
+                                setSelectedPolicyForAck(p);
+                                setSignatureName("");
+                                setSignatureChecked(false);
+                              }
+                            }}
                             className={`shrink-0 flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${
+
                               isAcked
                                 ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
                                 : "bg-gradient-indigo text-white border-transparent shadow-md hover:shadow-indigo-950/20 hover:-translate-y-0.5 active:translate-y-0"
@@ -929,6 +946,117 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* --- GOVERNANCE POLICY SIGNATURE MODAL --- */}
+      {selectedPolicyForAck && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-scale-up border border-indigo-500/20">
+            <div className="p-6 border-b border-brand-border flex justify-between items-center bg-slate-950/60">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <Scale className="w-5 h-5 text-indigo-400" />
+                <span>Governance Sign-Off</span>
+              </h3>
+              <button 
+                onClick={() => setSelectedPolicyForAck(null)} 
+                className="text-gray-400 hover:text-white text-lg font-bold"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] bg-indigo-950/60 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-bold">
+                    Version {selectedPolicyForAck.version}
+                  </span>
+                  <span className="text-xs text-gray-500 font-semibold">Effective: {selectedPolicyForAck.effective_date}</span>
+                </div>
+                <h4 className="font-bold text-xl text-white">{selectedPolicyForAck.title}</h4>
+              </div>
+
+              {/* Scrollable policy content reader */}
+              <div className="bg-slate-950/60 border border-brand-border p-4.5 rounded-xl text-sm text-gray-300 leading-relaxed max-h-48 overflow-y-auto">
+                <p className="font-semibold text-gray-200 mb-2">Policy Guidelines:</p>
+                {selectedPolicyForAck.content || "No policy content available."}
+                <p className="mt-4 text-xs text-gray-500 italic">
+                  Note: Acknowledging this policy serves as a legally binding digital signature recorded on the corporate sustainability ledger.
+                </p>
+              </div>
+
+              {/* Accept guidelines checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={signatureChecked}
+                  onChange={(e) => setSignatureChecked(e.target.checked)}
+                  className="mt-1 rounded border-gray-750 bg-slate-900 text-indigo-600 focus:ring-indigo-550 focus:ring-offset-slate-950 w-4 h-4 cursor-pointer"
+                />
+                <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
+                  I confirm that I have read, understood, and agree to abide by these policy guidelines.
+                </span>
+              </label>
+
+              {/* Signature Input */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+                  Digital Signature (Type your full name to sign)
+                </label>
+                <input
+                  type="text"
+                  placeholder={user.full_name}
+                  value={signatureName}
+                  onChange={(e) => setSignatureName(e.target.value)}
+                  className="w-full bg-slate-900 border border-brand-border px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 text-white font-medium"
+                />
+                <p className="text-[10px] text-gray-500">
+                  Please type <span className="font-semibold text-gray-300">{user.full_name}</span> exactly as shown.
+                </p>
+              </div>
+
+              <div className="pt-2 flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPolicyForAck(null)}
+                  className="flex-1 bg-slate-900 border border-brand-border text-gray-400 py-2.5 rounded-xl text-sm font-semibold hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (signatureChecked && signatureName.trim().toLowerCase() === user.full_name.toLowerCase()) {
+                      togglePolicyAck(selectedPolicyForAck.id);
+                      setSelectedPolicyForAck(null);
+                      // Show success alert/toast
+                      setToastMessage(`Policy "${selectedPolicyForAck.title}" successfully acknowledged! +100 XP awarded.`);
+                      setShowSuccessToast(true);
+                      setTimeout(() => setShowSuccessToast(false), 4000);
+                    }
+                  }}
+                  disabled={!signatureChecked || signatureName.trim().toLowerCase() !== user.full_name.toLowerCase()}
+                  className="flex-1 bg-gradient-indigo disabled:opacity-40 disabled:pointer-events-none text-white py-2.5 rounded-xl text-sm font-semibold hover:shadow-indigo-950/20 hover:shadow-lg transition-all"
+                >
+                  Sign & Accept
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- SUCCESS TOAST NOTIFICATION --- */}
+      {showSuccessToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-950/90 border border-emerald-500/30 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in backdrop-blur-md max-w-sm">
+          <div className="bg-emerald-950 p-2 rounded-xl border border-emerald-500/30 shrink-0">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Success</p>
+            <p className="text-xs text-gray-300 mt-0.5">{toastMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
