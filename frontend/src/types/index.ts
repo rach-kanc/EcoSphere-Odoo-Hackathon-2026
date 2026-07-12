@@ -85,7 +85,18 @@ export interface ESGPolicy {
   version: string;
   effective_date: string;
   status: PolicyStatus;
+  created_at: string;
+  updated_at: string;
 }
+
+export interface PolicyAcknowledgement {
+  id: number;
+  policy_id: number;
+  employee_id: number;
+  acknowledged_at: string;
+  signature_text?: string;
+}
+
 
 export type AuditStatus = "planned" | "ongoing" | "completed" | "cancelled";
 export type IssueSeverity = "low" | "medium" | "high" | "critical";

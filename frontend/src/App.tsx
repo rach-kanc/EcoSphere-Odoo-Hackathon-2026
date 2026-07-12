@@ -38,6 +38,7 @@ import {
 } from "recharts";
 
 import GamificationTab from "./components/GamificationTab";
+import GovernanceTab from "./components/GovernanceTab";
 // TypeScript types from local types file
 import {
   User,
@@ -199,7 +200,9 @@ const MOCK_POLICIES: ESGPolicy[] = [
     content: "Our target is to reduce aviation emissions by 25% by requiring trains for distances under 500km and economy booking class.",
     version: "2.1",
     effective_date: "2026-01-01",
-    status: "active"
+    status: "active",
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z"
   },
   {
     id: 2,
@@ -208,7 +211,9 @@ const MOCK_POLICIES: ESGPolicy[] = [
     content: "EcoSphere enforces zero tolerance for bribery, providing secure hotlines and dynamic protection for reporters.",
     version: "4.0",
     effective_date: "2026-03-15",
-    status: "active"
+    status: "active",
+    created_at: "2026-03-15T00:00:00Z",
+    updated_at: "2026-03-15T00:00:00Z"
   },
   {
     id: 3,
@@ -217,9 +222,12 @@ const MOCK_POLICIES: ESGPolicy[] = [
     content: "Mandatory protocols for customer data handling, matching standard regulatory frameworks.",
     version: "1.2",
     effective_date: "2026-06-01",
-    status: "active"
+    status: "active",
+    created_at: "2026-06-01T00:00:00Z",
+    updated_at: "2026-06-01T00:00:00Z"
   }
 ];
+
 
 const MOCK_ISSUES: ComplianceIssue[] = [
   {
@@ -263,17 +271,7 @@ export default function App() {
   const [logQuantity, setLogQuantity] = useState("");
   const [logNotes, setLogNotes] = useState("");
   
-  const [acknowledgedPolicies, setAcknowledgedPolicies] = useState<Record<number, boolean>>({
-    1: true
-  });
-
-  // Governance Modal States
-  const [selectedPolicyForAck, setSelectedPolicyForAck] = useState<ESGPolicy | null>(null);
-  const [signatureName, setSignatureName] = useState("");
-  const [signatureChecked, setSignatureChecked] = useState(false);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-
+  const [acknowledgedPolicies, setAcknowledgedPolicies] = useState<Record<number, boolean>>({});
 
   const handleLogEmissions = (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,20 +313,19 @@ export default function App() {
     setShowLogModal(false);
   };
 
-  const togglePolicyAck = (id: number) => {
-    const isAck = !acknowledgedPolicies[id];
-    setAcknowledgedPolicies({
-      ...acknowledgedPolicies,
-      [id]: isAck
-    });
-
-    if (isAck) {
-      setUser({
-        ...user,
-        xp_points: user.xp_points + 100
-      });
-    }
+  const handlePolicyAck = (id: number) => {
+    setAcknowledgedPolicies((prev) => ({ ...prev, [id]: true }));
   };
+
+  const handleUserXpUpdate = (xp: number) => {
+    setUser((prev) => ({ ...prev, xp_points: prev.xp_points + xp }));
+  };
+  // --- Governance score (live) ---
+  const activePolicies = policies.filter((p) => p.status === "active");
+  const ackedCount = activePolicies.filter((p) => !!acknowledgedPolicies[p.id]).length;
+  const activeCount = activePolicies.length;
+  // Score = (acknowledged / total) * 100, capped at 100. Show 0 when no active policies.
+  const gScore = activeCount > 0 ? Math.round((ackedCount / activeCount) * 1000) / 10 : 0;
 
   return (
     <div className="flex min-h-screen bg-brand-dark">
@@ -488,8 +485,12 @@ export default function App() {
                     <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Governance (G)</span>
                     <Scale className="w-5 h-5 text-indigo-400" />
                   </div>
-                  <p className="text-4xl font-extrabold mt-4 text-white">90.0<span className="text-lg text-gray-500">/100</span></p>
-                  <p className="text-xs text-gray-400 mt-4">3/3 active policies acknowledged</p>
+                  <p className="text-4xl font-extrabold mt-4 text-white">
+                    {gScore.toFixed(1)}<span className="text-lg text-gray-500">/100</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-4">
+                    {ackedCount}/{activeCount} active {activeCount === 1 ? "policy" : "policies"} acknowledged
+                  </p>
                 </div>
               </div>
 
@@ -761,114 +762,20 @@ export default function App() {
           )}
 
           {activeTab === "governance" && (
-            <div className="space-y-8 animate-fade-in">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight">Corporate Governance & Audits</h2>
-                <p className="text-gray-400 text-sm mt-0.5">Policy compliance tracking, mandatory sign-offs, and audit resolution ledgers.</p>
-              </div>
-
-              {/* Grid of Policies & Audits */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Active policies list */}
-                <div className="space-y-6 lg:col-span-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Awaiting Sign-Offs</h3>
-                  <div className="space-y-4">
-                    {policies.map((p) => {
-                      const isAcked = acknowledgedPolicies[p.id];
-                      return (
-                        <div key={p.id} className="glass-card p-6 rounded-2xl flex justify-between items-start gap-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-[10px] bg-slate-800 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold">
-                                Version {p.version}
-                              </span>
-                              <span className="text-xs text-gray-500 font-medium">Effective: {p.effective_date}</span>
-                            </div>
-                            <h4 className="font-bold text-base">{p.title}</h4>
-                            <p className="text-sm text-gray-400 leading-relaxed">{p.content}</p>
-                          </div>
-
-                          <button
-                            onClick={() => {
-                              if (isAcked) {
-                                togglePolicyAck(p.id);
-                              } else {
-                                setSelectedPolicyForAck(p);
-                                setSignatureName("");
-                                setSignatureChecked(false);
-                              }
-                            }}
-                            className={`shrink-0 flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-300 ${
-
-                              isAcked
-                                ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
-                                : "bg-gradient-indigo text-white border-transparent shadow-md hover:shadow-indigo-950/20 hover:-translate-y-0.5 active:translate-y-0"
-                            }`}
-                          >
-                            {isAcked ? (
-                              <>
-                                <Check className="w-4 h-4" />
-                                <span>Signed Off</span>
-                              </>
-                            ) : (
-                              <>
-                                <FileCheck className="w-4 h-4" />
-                                <span>Sign Policy</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Audit issue tracking */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 h-fit">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Compliance Audits</h3>
-                    <ShieldAlert className="w-5 h-5 text-indigo-400" />
-                  </div>
-                  
-                  <div className="space-y-4 divide-y divide-brand-border">
-                    {issues.map((issue) => (
-                      <div key={issue.id} className="pt-4 first:pt-0 space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase border ${
-                            issue.severity === "critical"
-                              ? "bg-rose-950/40 text-rose-400 border-rose-500/20 animate-pulse"
-                              : issue.severity === "high"
-                              ? "bg-amber-950/40 text-amber-400 border-amber-500/20"
-                              : "bg-slate-800 text-gray-400 border-brand-border"
-                          }`}>
-                            {issue.severity}
-                          </span>
-                          <span className="text-gray-500 font-semibold">Due: {issue.due_date}</span>
-                        </div>
-                        <h4 className="font-semibold text-sm leading-snug">{issue.title}</h4>
-                        <div className="flex justify-between items-center pt-1 text-[10px]">
-                          <span className="text-gray-500">ID: {issue.audit_id}</span>
-                          <span className={`font-bold capitalize ${
-                            issue.status === "resolved"
-                              ? "text-emerald-400"
-                              : issue.status === "in_progress"
-                              ? "text-amber-400"
-                              : "text-rose-400"
-                          }`}>
-                            {issue.status.replace("_", " ")}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <GovernanceTab
+              user={user}
+              policies={policies}
+              issues={issues}
+              acknowledgedPolicies={acknowledgedPolicies}
+              onPolicyAck={handlePolicyAck}
+              onUserXpUpdate={handleUserXpUpdate}
+            />
           )}
 
           {activeTab === "gamification" && (
             <GamificationTab user={user} setUser={setUser} />
           )}
+
         </div>
       </main>
 
@@ -946,117 +853,6 @@ export default function App() {
           </div>
         </div>
       )}
-
-      {/* --- GOVERNANCE POLICY SIGNATURE MODAL --- */}
-      {selectedPolicyForAck && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-scale-up border border-indigo-500/20">
-            <div className="p-6 border-b border-brand-border flex justify-between items-center bg-slate-950/60">
-              <h3 className="font-bold text-lg flex items-center gap-2">
-                <Scale className="w-5 h-5 text-indigo-400" />
-                <span>Governance Sign-Off</span>
-              </h3>
-              <button 
-                onClick={() => setSelectedPolicyForAck(null)} 
-                className="text-gray-400 hover:text-white text-lg font-bold"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-indigo-950/60 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-bold">
-                    Version {selectedPolicyForAck.version}
-                  </span>
-                  <span className="text-xs text-gray-500 font-semibold">Effective: {selectedPolicyForAck.effective_date}</span>
-                </div>
-                <h4 className="font-bold text-xl text-white">{selectedPolicyForAck.title}</h4>
-              </div>
-
-              {/* Scrollable policy content reader */}
-              <div className="bg-slate-950/60 border border-brand-border p-4.5 rounded-xl text-sm text-gray-300 leading-relaxed max-h-48 overflow-y-auto">
-                <p className="font-semibold text-gray-200 mb-2">Policy Guidelines:</p>
-                {selectedPolicyForAck.content || "No policy content available."}
-                <p className="mt-4 text-xs text-gray-500 italic">
-                  Note: Acknowledging this policy serves as a legally binding digital signature recorded on the corporate sustainability ledger.
-                </p>
-              </div>
-
-              {/* Accept guidelines checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={signatureChecked}
-                  onChange={(e) => setSignatureChecked(e.target.checked)}
-                  className="mt-1 rounded border-gray-750 bg-slate-900 text-indigo-600 focus:ring-indigo-550 focus:ring-offset-slate-950 w-4 h-4 cursor-pointer"
-                />
-                <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
-                  I confirm that I have read, understood, and agree to abide by these policy guidelines.
-                </span>
-              </label>
-
-              {/* Signature Input */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                  Digital Signature (Type your full name to sign)
-                </label>
-                <input
-                  type="text"
-                  placeholder={user.full_name}
-                  value={signatureName}
-                  onChange={(e) => setSignatureName(e.target.value)}
-                  className="w-full bg-slate-900 border border-brand-border px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:border-indigo-500/50 text-white font-medium"
-                />
-                <p className="text-[10px] text-gray-500">
-                  Please type <span className="font-semibold text-gray-300">{user.full_name}</span> exactly as shown.
-                </p>
-              </div>
-
-              <div className="pt-2 flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedPolicyForAck(null)}
-                  className="flex-1 bg-slate-900 border border-brand-border text-gray-400 py-2.5 rounded-xl text-sm font-semibold hover:text-white hover:bg-slate-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (signatureChecked && signatureName.trim().toLowerCase() === user.full_name.toLowerCase()) {
-                      togglePolicyAck(selectedPolicyForAck.id);
-                      setSelectedPolicyForAck(null);
-                      // Show success alert/toast
-                      setToastMessage(`Policy "${selectedPolicyForAck.title}" successfully acknowledged! +100 XP awarded.`);
-                      setShowSuccessToast(true);
-                      setTimeout(() => setShowSuccessToast(false), 4000);
-                    }
-                  }}
-                  disabled={!signatureChecked || signatureName.trim().toLowerCase() !== user.full_name.toLowerCase()}
-                  className="flex-1 bg-gradient-indigo disabled:opacity-40 disabled:pointer-events-none text-white py-2.5 rounded-xl text-sm font-semibold hover:shadow-indigo-950/20 hover:shadow-lg transition-all"
-                >
-                  Sign & Accept
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- SUCCESS TOAST NOTIFICATION --- */}
-      {showSuccessToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-950/90 border border-emerald-500/30 text-white px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in backdrop-blur-md max-w-sm">
-          <div className="bg-emerald-950 p-2 rounded-xl border border-emerald-500/30 shrink-0">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Success</p>
-            <p className="text-xs text-gray-300 mt-0.5">{toastMessage}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
