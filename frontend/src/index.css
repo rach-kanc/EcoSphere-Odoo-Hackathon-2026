@@ -198,7 +198,7 @@
   background: #94a3b8;
 }
 
-/* Secondary Button Overrides for Light Mode */
+/* Slate Button Overrides for Light Mode */
 .light-theme button.bg-slate-900,
 .light-theme button.bg-slate-950,
 .light-theme button[class*="bg-slate-"] {
