@@ -10,6 +10,7 @@ from app.models.emission_factor import (  # noqa: F401
     EmissionFactor,
     FactorStatus,
 )
+from app.models.category import Category, CategoryType, CategoryStatus  # noqa: F401
 
 # ── Your models — Department, User ────────────────────────────────────────
 from app.models.department import Department, DeptStatus  # noqa: F401
