@@ -17,7 +17,7 @@ from app.models.csr_activity import CSRActivity, CSRActivityStatus, EmployeePart
 # ── Feature models (Governance, Environmental, Gamification, Dashboard) ────
 from app.models.user import User, UserRole  # noqa: F401
 from app.models.carbon_transaction import CarbonTransaction, TransactionSource  # noqa: F401
-from app.models.environmental_goal import EnvironmentalGoal, GoalStatus  # noqa: F401
+from app.models.environmental_goal import EnvironmentalGoal, GoalStatus, TargetMetric  # noqa: F401
 from app.models.policy import ESGPolicy, PolicyType, PolicyStatus, PolicyAcknowledgement  # noqa: F401
 from app.models.audit import Audit, AuditStatus, ComplianceIssue, IssueSeverity, IssueStatus  # noqa: F401
 from app.models.challenge import Challenge, ChallengeDifficulty, ChallengeStatus, ChallengeParticipation  # noqa: F401
@@ -44,6 +44,7 @@ __all__ = [
     "TransactionSource",
     "EnvironmentalGoal",
     "GoalStatus",
+    "TargetMetric",
     "ESGPolicy",
     "PolicyType",
     "PolicyStatus",
