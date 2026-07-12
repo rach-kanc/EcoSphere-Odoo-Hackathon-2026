@@ -70,6 +70,33 @@ export interface CarbonTransaction {
   notes?: string;
 }
 
+export type GoalStatus = "on_track" | "at_risk" | "achieved" | "missed";
+export type TargetMetric =
+  | "total_co2e"
+  | "reduction_pct"
+  | "energy"
+  | "water"
+  | "waste"
+  | "renewable_pct"
+  | "other";
+
+export interface EnvironmentalGoal {
+  id: number;
+  title: string;
+  description?: string;
+  department_id?: number;
+  target_metric: TargetMetric;
+  baseline_value?: number;
+  target_value: number;
+  current_value: number;
+  unit: string;
+  start_date?: string;
+  deadline: string;
+  status: GoalStatus;
+  progress_pct: number;
+  timeline_pct: number;
+}
+
 export interface DepartmentCarbonSummary {
   department_id: number | null;
   department_name: string | null;

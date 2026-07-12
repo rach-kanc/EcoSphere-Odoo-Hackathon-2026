@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import enum
 from datetime import date, datetime
+from math import inf
 
 from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
@@ -39,6 +40,13 @@ class TargetMetric(str, enum.Enum):
 
 # Fraction of remaining-progress-vs-remaining-time below which a goal is "at risk".
 _AT_RISK_TOLERANCE = 0.9
+
+_BUDGET_METRICS = {
+    TargetMetric.TOTAL_CO2E,
+    TargetMetric.ENERGY,
+    TargetMetric.WATER,
+    TargetMetric.WASTE,
+}
 
 
 class EnvironmentalGoal(Base):
@@ -102,6 +110,25 @@ class EnvironmentalGoal(Base):
             )
         return self.target_value < self.baseline_value
 
+    @property
+    def _tracks_budget_usage(self) -> bool:
+        """Budget goals compare cumulative actuals against a period cap."""
+        return self.baseline_value is None and self.target_metric in _BUDGET_METRICS
+
+    def _timeline_fraction(self, as_of: date | None = None) -> float:
+        as_of = as_of or date.today()
+        start = self.start_date
+        if start is None or start >= self.deadline:
+            return 0.0
+        elapsed = (as_of - start).days
+        total = (self.deadline - start).days
+        return max(0.0, min(elapsed / total, 1.0))
+
+    def _budget_usage_fraction_for(self, current: float) -> float:
+        if self.target_value == 0:
+            return 0.0 if current <= 0 else inf
+        return current / self.target_value
+
     def _progress_fraction_for(self, current: float) -> float:
         """Progress toward the target for a given ``current`` value.
 
@@ -109,6 +136,9 @@ class EnvironmentalGoal(Base):
         value has moved from baseline toward target, not a raw current/target
         ratio. Values can exceed 1.0 when the target is overshot.
         """
+        if self._tracks_budget_usage:
+            return self._budget_usage_fraction_for(current)
+
         base, cur, tgt = self.baseline_value, current, self.target_value
         if base is not None and base != tgt:
             return (base - cur) / (base - tgt) if self._lower_is_better else (
@@ -126,8 +156,13 @@ class EnvironmentalGoal(Base):
 
     @property
     def progress_pct(self) -> float:
-        """Percentage progress toward the target, clamped to [0, 100]."""
+        """Percentage progress/usage against the target, clamped to [0, 100]."""
         return round(max(0.0, min(self.progress_fraction, 1.0)) * 100, 1)
+
+    @property
+    def timeline_pct(self) -> float:
+        """Percentage of the goal timeline elapsed, clamped to [0, 100]."""
+        return round(self._timeline_fraction() * 100, 1)
 
     @property
     def is_target_met(self) -> bool:
@@ -144,22 +179,29 @@ class EnvironmentalGoal(Base):
         * ``AT_RISK``  — progress lags meaningfully behind the timeline.
         """
         as_of = as_of or date.today()
-        progress = self._progress_fraction_for(current)
 
+        if self._tracks_budget_usage:
+            usage = self._budget_usage_fraction_for(current)
+            if as_of >= self.deadline:
+                return GoalStatus.MISSED if usage > 1.0 else GoalStatus.ON_TRACK
+
+            time_fraction = self._timeline_fraction(as_of)
+            if time_fraction == 0.0:
+                return GoalStatus.ON_TRACK
+            return (
+                GoalStatus.ON_TRACK
+                if max(0.0, usage) <= time_fraction / _AT_RISK_TOLERANCE
+                else GoalStatus.AT_RISK
+            )
+
+        progress = self._progress_fraction_for(current)
         if progress >= 1.0:
             return GoalStatus.ACHIEVED
         if as_of >= self.deadline:
             return GoalStatus.MISSED
 
         # How far through the timeline are we?
-        start = self.start_date
-        if start is None or start >= self.deadline:
-            time_fraction = 0.0
-        else:
-            elapsed = (as_of - start).days
-            total = (self.deadline - start).days
-            time_fraction = max(0.0, min(elapsed / total, 1.0))
-
+        time_fraction = self._timeline_fraction(as_of)
         if time_fraction == 0.0:
             return GoalStatus.ON_TRACK
         return (
