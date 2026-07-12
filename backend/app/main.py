@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import app.models  # noqa: F401  (register models on Base.metadata)
 from app.api.v1.auth import router as auth_router
@@ -18,6 +19,14 @@ from app.api.v1.policies import router as policies_router
 from app.api.v1.settings import router as settings_router
 
 app = FastAPI(title="EcoSphere API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for hackathon MVP
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(auto_calculation_router, prefix="/api/v1")
 app.include_router(carbon_transactions_router, prefix="/api/v1")

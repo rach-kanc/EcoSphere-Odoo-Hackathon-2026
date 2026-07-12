@@ -15,7 +15,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
   const [error, setError] = useState('');
 
   // Use environment variable for API URL or fallback to local
-  const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
           email: email,
           full_name: email.split('@')[0], // Quick mock name
           role: 'employee',
-          department_id: null,
+          department_id: undefined,
           is_active: true,
           xp_points: 0,
           level: 1
