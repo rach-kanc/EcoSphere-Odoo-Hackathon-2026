@@ -10,6 +10,7 @@ from app.models.emission_factor import (  # noqa: F401
     EmissionFactor,
     FactorStatus,
 )
+from app.models.category import Category, CategoryType, CategoryStatus  # noqa: F401
 
 # ── Your models — Department, User ────────────────────────────────────────
 from app.models.department import Department, DeptStatus  # noqa: F401
@@ -17,7 +18,11 @@ from app.models.user import User, UserRole  # noqa: F401
 
 # ── Environmental ─────────────────────────────────────────────────────────
 from app.models.carbon_transaction import CarbonTransaction, TransactionSource  # noqa: F401
-from app.models.environmental_goal import EnvironmentalGoal, GoalStatus  # noqa: F401
+from app.models.environmental_goal import (  # noqa: F401
+    EnvironmentalGoal,
+    GoalStatus,
+    TargetMetric,
+)
 
 # ── Social ────────────────────────────────────────────────────────────────
 from app.models.csr_activity import (  # noqa: F401
@@ -55,7 +60,7 @@ __all__ = [
     "User", "UserRole",
     # Environmental
     "CarbonTransaction", "TransactionSource",
-    "EnvironmentalGoal", "GoalStatus",
+    "EnvironmentalGoal", "GoalStatus", "TargetMetric",
     # Social
     "CSRActivity", "ActivityStatus",
     "EmployeeParticipation", "ParticipationStatus",
