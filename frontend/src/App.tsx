@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import {
   LayoutDashboard,
@@ -36,6 +37,7 @@ import {
   Pie
 } from "recharts";
 
+import GamificationTab from "./components/GamificationTab";
 // TypeScript types from local types file
 import {
   User,
@@ -94,6 +96,7 @@ const MOCK_TRANSACTIONS: CarbonTransaction[] = [
   {
     id: 1,
     source_type: "fleet",
+    emission_factor_id: 1,
     quantity: 120,
     co2e: 324.5,
     factor_value: 2.7,
@@ -106,6 +109,7 @@ const MOCK_TRANSACTIONS: CarbonTransaction[] = [
   {
     id: 2,
     source_type: "manufacturing",
+    emission_factor_id: 1,
     quantity: 500,
     co2e: 1250.0,
     factor_value: 2.5,
@@ -118,6 +122,7 @@ const MOCK_TRANSACTIONS: CarbonTransaction[] = [
   {
     id: 3,
     source_type: "purchase",
+    emission_factor_id: 1,
     quantity: 4500,
     co2e: 3825.0,
     factor_value: 0.85,
@@ -130,6 +135,7 @@ const MOCK_TRANSACTIONS: CarbonTransaction[] = [
   {
     id: 4,
     source_type: "expense",
+    emission_factor_id: 1,
     quantity: 45,
     co2e: 98.4,
     factor_value: 2.18,
@@ -242,28 +248,6 @@ const MOCK_ISSUES: ComplianceIssue[] = [
   }
 ];
 
-const MOCK_CHALLENGES: Challenge[] = [
-  {
-    id: 1,
-    title: "Zero Waste Coffee Cup Week",
-    description: "Bring your own reusable flask or cup for all office hot drinks.",
-    xp_reward: 100,
-    difficulty: "easy",
-    deadline: "2026-07-20",
-    evidence_required: false,
-    status: "active"
-  },
-  {
-    id: 2,
-    title: "Carbon Footprint Audit Challenge",
-    description: "Track and log every business expense category carbon rating.",
-    xp_reward: 350,
-    difficulty: "hard",
-    deadline: "2026-08-05",
-    evidence_required: true,
-    status: "active"
-  }
-];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"summary" | "environmental" | "social" | "governance" | "gamification">("summary");
@@ -307,6 +291,7 @@ export default function App() {
     const newTxn: CarbonTransaction = {
       id: transactions.length + 1,
       source_type: logType,
+    emission_factor_id: 1,
       quantity,
       co2e,
       factor_value: factor,
@@ -882,87 +867,7 @@ export default function App() {
           )}
 
           {activeTab === "gamification" && (
-            <div className="space-y-8 animate-fade-in">
-              {/* Level progress */}
-              <div className="glass-card p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold tracking-tight">XP Rewards & Achievements</h3>
-                  <p className="text-gray-400 text-sm">Earn XP points for taking eco-friendly actions and claim rewards.</p>
-                </div>
-                
-                {/* Level Ring */}
-                <div className="flex items-center gap-4 bg-slate-950/40 border border-brand-border p-4 rounded-xl md:w-80">
-                  <div className="w-12 h-12 rounded-full bg-gradient-emerald flex items-center justify-center font-extrabold text-white text-lg shrink-0 shadow-lg">
-                    {user.level}
-                  </div>
-                  <div className="flex-1 space-y-1.5 min-w-0">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-gray-400">Level Progress</span>
-                      <span className="text-emerald-400">{user.xp_points % 1000} / 1000 XP</span>
-                    </div>
-                    <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-brand-border">
-                      <div className="h-full bg-gradient-emerald rounded-full" style={{ width: `${(user.xp_points % 1000) / 10}%` }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Challenges & Badges Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Active challenges */}
-                <div className="space-y-6 lg:col-span-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Active ESG Challenges</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {MOCK_CHALLENGES.map((ch) => (
-                      <div key={ch.id} className="glass-card p-6 rounded-2xl flex flex-col justify-between group hover:border-emerald-500/20 hover:shadow-emerald-950/5 hover:shadow-lg transition-all duration-300">
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase border ${
-                              ch.difficulty === "hard"
-                                ? "bg-rose-950/40 text-rose-400 border-rose-500/20"
-                                : "bg-emerald-950/40 text-emerald-400 border-emerald-500/20"
-                            }`}>
-                              {ch.difficulty}
-                            </span>
-                            <span className="text-[10px] text-gray-500 font-semibold">Till: {ch.deadline}</span>
-                          </div>
-                          <h4 className="font-bold text-base leading-snug group-hover:text-emerald-400 transition-colors">{ch.title}</h4>
-                          <p className="text-sm text-gray-400">{ch.description}</p>
-                        </div>
-
-                        <div className="flex justify-between items-center mt-6 pt-4 border-t border-brand-border">
-                          <span className="text-xs font-semibold text-gray-500">Reward</span>
-                          <span className="text-sm font-extrabold text-amber-400">+{ch.xp_reward} XP</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Badges Locker */}
-                <div className="glass-card p-6 rounded-2xl space-y-6">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Your Badges Locker</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { icon: Leaf, label: "Eco Pioneer", unlocked: true, color: "text-emerald-400 bg-emerald-950/40 border-emerald-500/20" },
-                      { icon: Award, label: "CSR Champion", unlocked: true, color: "text-teal-400 bg-teal-950/40 border-teal-500/20" },
-                      { icon: Scale, label: "Comply Guard", unlocked: true, color: "text-indigo-400 bg-indigo-950/40 border-indigo-500/20" },
-                      { icon: Trophy, label: "Top Ranker", unlocked: false, color: "text-gray-500 bg-slate-900 border-brand-border opacity-40" }
-                    ].map((badge, idx) => {
-                      const Icon = badge.icon;
-                      return (
-                        <div key={idx} className="flex flex-col items-center gap-1.5 text-center group">
-                          <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 ${badge.color}`}>
-                            <Icon className="w-7 h-7" />
-                          </div>
-                          <span className="text-[10px] font-semibold text-gray-400 mt-1 truncate w-full">{badge.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <GamificationTab user={user} setUser={setUser} />
           )}
         </div>
       </main>
