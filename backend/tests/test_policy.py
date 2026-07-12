@@ -27,6 +27,7 @@ def db():
     # Seed a test user
     test_user = User(
         email="test.user@ecosphere.com",
+        hashed_password="mock_hashed_password",
         full_name="Test User",
         role="employee",
         is_active=True,
