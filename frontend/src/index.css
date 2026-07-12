@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 @layer utilities {
+  .landing-paper {
+    background-color: #ede8d7;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(17, 17, 15, 0.22) 1px, transparent 0),
+      linear-gradient(120deg, rgba(255, 255, 255, 0.38), transparent 34%),
+      linear-gradient(0deg, rgba(83, 101, 44, 0.08), rgba(246, 240, 223, 0.2));
+    background-size: 52px 52px, 100% 100%, 100% 100%;
+  }
+
+  .landing-marquee {
+    animation: landing-marquee 26s linear infinite;
+  }
+
   .glass-card {
     background: rgba(17, 24, 39, 0.75);
     backdrop-filter: blur(12px);
@@ -25,6 +38,21 @@
 
   .bg-gradient-indigo {
     background: linear-gradient(135deg, #312e81 0%, #4f46e5 100%);
+  }
+}
+
+@keyframes landing-marquee {
+  from {
+    transform: translateX(2%);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-marquee {
+    animation: none;
   }
 }
 
