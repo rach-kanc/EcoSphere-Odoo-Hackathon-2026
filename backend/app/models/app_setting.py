@@ -16,6 +16,9 @@ from app.core.database import Base
 
 # Well-known setting keys.
 AUTO_CALCULATION_ENABLED = "auto_calculation_enabled"
+# Weight (0.0-1.0) the Environmental pillar contributes to Department Total
+# Score, per Business Workflow Section 5. Default 0.40 (issue #10).
+ENVIRONMENTAL_SCORE_WEIGHT = "environmental_score_weight"
 
 
 class AppSetting(Base):
