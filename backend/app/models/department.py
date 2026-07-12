@@ -41,7 +41,7 @@ class Department(Base):
     # Relationships
     users: Mapped[list["User"]] = relationship("User", back_populates="department", foreign_keys="User.department_id")  # type: ignore[name-defined]
     children: Mapped[list["Department"]] = relationship("Department", back_populates="parent", foreign_keys=[parent_id])
-    parent: Mapped[Optional["Department "]] = relationship("Department", back_populates="children", remote_side="Department.id", foreign_keys=[parent_id])
+    parent: Mapped[Optional["Department"]] = relationship("Department", back_populates="children", remote_side="Department.id", foreign_keys=[parent_id])
     carbon_transactions: Mapped[list["CarbonTransaction"]] = relationship("CarbonTransaction", back_populates="department")  # type: ignore[name-defined]
     scores: Mapped[list["DepartmentScore"]] = relationship("DepartmentScore", back_populates="department")  # type: ignore[name-defined]
 
