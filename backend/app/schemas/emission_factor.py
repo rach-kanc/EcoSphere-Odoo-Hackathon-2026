@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,7 +15,7 @@ class EmissionFactorBase(BaseModel):
     activity_type: ActivityType
     unit: str = Field(..., max_length=32, description='Unit of activity, e.g. "kWh", "litre", "km"')
     co2e_per_unit: float = Field(..., ge=0, description="kg CO2e per one unit of activity")
-    source: str | None = Field(None, max_length=512)
+    source: Optional[str] = Field(None, max_length=512)
 
 
 class EmissionFactorCreate(EmissionFactorBase):
@@ -30,7 +31,7 @@ class EmissionFactorNewVersion(BaseModel):
     activity_type: ActivityType
     unit: str = Field(..., max_length=32)
     co2e_per_unit: float = Field(..., ge=0)
-    source: str | None = Field(None, max_length=512)
+    source: Optional[str] = Field(None, max_length=512)
     effective_start: date
 
 
@@ -39,5 +40,5 @@ class EmissionFactorRead(EmissionFactorBase):
 
     id: int
     effective_start: date
-    effective_end: date | None
+    effective_end: Optional[date]
     status: FactorStatus

@@ -1,6 +1,8 @@
 """Category API routes."""
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
@@ -22,8 +24,8 @@ def get_category_service(db: Session = Depends(get_db)) -> CategoryService:
 
 @router.get("", response_model=list[CategoryRead])
 def list_categories(
-    category_type: CategoryType | None = Query(default=None, alias="type"),
-    status: CategoryStatus | None = None,
+    category_type: Optional[CategoryType] = Query(default=None, alias="type"),
+    status: Optional[CategoryStatus] = None,
     service: CategoryService = Depends(get_category_service),
 ):
     return service.list_categories(category_type=category_type, status=status)

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import enum
 from datetime import date
+from typing import Optional
 
 from sqlalchemy import (
     CheckConstraint,
@@ -72,11 +73,11 @@ class EmissionFactor(Base):
     unit: Mapped[str] = mapped_column(String(32), nullable=False)
     # kg CO2e emitted per one ``unit`` of activity.
     co2e_per_unit: Mapped[float] = mapped_column(Float, nullable=False)
-    source: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
 
     effective_start: Mapped[date] = mapped_column(Date, nullable=False)
     # ``None`` means the version is open-ended (current).
-    effective_end: Mapped[date | None] = mapped_column(Date, nullable=True)
+    effective_end: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
 
     status: Mapped[FactorStatus] = mapped_column(
         Enum(FactorStatus, name="factor_status"),
@@ -110,8 +111,8 @@ class EmissionFactor(Base):
 
     @classmethod
     def resolve(
-        cls, db: Session, factor_code: str, on_date: date | None = None
-    ) -> "EmissionFactor | None":
+        cls, db: Session, factor_code: str, on_date: Optional[date] = None
+    ) -> Optional["EmissionFactor"]:
         """Return the active factor version for ``factor_code`` on ``on_date``.
 
         Defaults to today. Only ACTIVE versions whose effective period contains
@@ -151,7 +152,7 @@ class EmissionFactor(Base):
         unit: str,
         co2e_per_unit: float,
         effective_start: date,
-        source: str | None = None,
+        source: Optional[str] = None,
     ) -> "EmissionFactor":
         """Add a new version of a factor without overwriting existing history.
 
