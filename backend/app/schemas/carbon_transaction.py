@@ -58,3 +58,12 @@ class CarbonTransactionRead(BaseModel):
     created_by: CreatedBy
     status: TransactionStatus
     notes: str | None
+
+
+class DepartmentCarbonSummary(BaseModel):
+    """Aggregated CO2e totals for one department (issue #8)."""
+
+    department_id: int | None
+    department_name: str | None
+    transaction_count: int
+    total_co2e: float

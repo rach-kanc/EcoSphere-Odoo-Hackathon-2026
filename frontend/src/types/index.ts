@@ -97,6 +97,13 @@ export interface EnvironmentalGoal {
   timeline_pct: number;
 }
 
+export interface DepartmentCarbonSummary {
+  department_id: number | null;
+  department_name: string | null;
+  transaction_count: number;
+  total_co2e: number;
+}
+
 // ── Auto emission calculation engine (issue #7) ────────────────────────────
 export interface EmissionFactorMapping {
   id: number;

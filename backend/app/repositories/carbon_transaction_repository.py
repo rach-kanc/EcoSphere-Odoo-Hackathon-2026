@@ -4,6 +4,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Optional
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.carbon_transaction import (
@@ -12,6 +13,7 @@ from app.models.carbon_transaction import (
     SourceType,
     TransactionStatus,
 )
+from app.models.department import Department
 
 
 class CarbonTransactionRepository:
@@ -67,3 +69,32 @@ class CarbonTransactionRepository:
         self.db.add(transaction)
         self.db.flush()
         return transaction
+
+    def aggregate_by_department(
+        self,
+        *,
+        source_type: Optional[SourceType] = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
+    ) -> list:
+        """Return (department_id, department_name, count, total_co2e) rows."""
+        query = (
+            self.db.query(
+                CarbonTransaction.department_id,
+                Department.name,
+                func.count(CarbonTransaction.id),
+                func.coalesce(func.sum(CarbonTransaction.co2e), 0.0),
+            )
+            .outerjoin(Department, Department.id == CarbonTransaction.department_id)
+        )
+        if source_type is not None:
+            query = query.filter(CarbonTransaction.source_type == source_type)
+        if date_from is not None:
+            query = query.filter(CarbonTransaction.transaction_date >= date_from)
+        if date_to is not None:
+            query = query.filter(CarbonTransaction.transaction_date <= date_to)
+        return (
+            query.group_by(CarbonTransaction.department_id, Department.name)
+            .order_by(func.coalesce(func.sum(CarbonTransaction.co2e), 0.0).desc())
+            .all()
+        )
