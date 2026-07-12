@@ -70,6 +70,66 @@ export interface CarbonTransaction {
   notes?: string;
 }
 
+export type GoalStatus = "on_track" | "at_risk" | "achieved" | "missed";
+export type TargetMetric =
+  | "total_co2e"
+  | "reduction_pct"
+  | "energy"
+  | "water"
+  | "waste"
+  | "renewable_pct"
+  | "other";
+
+export interface EnvironmentalGoal {
+  id: number;
+  title: string;
+  description?: string;
+  department_id?: number;
+  target_metric: TargetMetric;
+  baseline_value?: number;
+  target_value: number;
+  current_value: number;
+  unit: string;
+  start_date?: string;
+  deadline: string;
+  status: GoalStatus;
+  progress_pct: number;
+  timeline_pct: number;
+}
+
+export interface DepartmentCarbonSummary {
+  department_id: number | null;
+  department_name: string | null;
+  transaction_count: number;
+  total_co2e: number;
+}
+
+// ── Auto emission calculation engine (issue #7) ────────────────────────────
+export interface EmissionFactorMapping {
+  id: number;
+  source_type: SourceType;
+  match_key: string;
+  factor_code: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export type PendingStatus = "pending" | "resolved" | "dismissed";
+
+export interface PendingAutoCalculation {
+  id: number;
+  source_type: SourceType;
+  source_record_id: number;
+  source_reference?: string;
+  match_key: string;
+  department_id?: number;
+  quantity: number;
+  transaction_date: string;
+  reason: string;
+  status: PendingStatus;
+  created_at: string;
+}
+
 export type CSRActivityStatus = "Draft" | "Active" | "Completed" | "Archived";
 
 export interface CSRActivity {

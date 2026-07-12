@@ -3,7 +3,16 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import CheckConstraint, Date, DateTime, Float, ForeignKey, Integer, func
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -42,6 +51,7 @@ class DepartmentScore(Base):
         CheckConstraint("social_score >= 0 AND social_score <= 100", name="ck_soc_score_range"),
         CheckConstraint("governance_score >= 0 AND governance_score <= 100", name="ck_gov_score_range"),
         CheckConstraint("total_score >= 0 AND total_score <= 100", name="ck_total_score_range"),
+        UniqueConstraint("department_id", "period", name="uq_department_score_dept_period"),
     )
 
     # Relationships

@@ -27,6 +27,12 @@ from app.models.badge import Badge, BadgeRarity, UserBadge  # noqa: F401
 from app.models.reward import Reward, RewardStatus, RewardRedemption, RedemptionStatus  # noqa: F401
 from app.models.department_score import DepartmentScore  # noqa: F401
 from app.models.notification import Notification, NotificationType  # noqa: F401
+from app.models.app_setting import AppSetting  # noqa: F401
+from app.models.emission_factor_mapping import EmissionFactorMapping  # noqa: F401
+from app.models.pending_auto_calculation import (  # noqa: F401
+    PendingAutoCalculation,
+    PendingStatus,
+)
 
 __all__ = [
     "ActivityType",
@@ -72,4 +78,8 @@ __all__ = [
     "DepartmentScore",
     "Notification",
     "NotificationType",
+    "AppSetting",
+    "EmissionFactorMapping",
+    "PendingAutoCalculation",
+    "PendingStatus",
 ]
