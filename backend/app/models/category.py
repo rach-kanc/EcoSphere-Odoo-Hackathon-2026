@@ -4,7 +4,7 @@ from __future__ import annotations
 import enum
 
 from sqlalchemy import Enum, Index, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -35,3 +35,7 @@ class Category(Base):
     )
 
     __table_args__ = (Index("ix_categories_type_status", "type", "status"),)
+
+    csr_activities: Mapped[list["CSRActivity"]] = relationship(
+        "CSRActivity", back_populates="category"
+    )

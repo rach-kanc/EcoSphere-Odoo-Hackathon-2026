@@ -1,6 +1,8 @@
 """Business logic for Category CRUD."""
 from __future__ import annotations
 
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.category import Category, CategoryStatus, CategoryType
@@ -27,8 +29,8 @@ class CategoryService:
     def list_categories(
         self,
         *,
-        category_type: CategoryType | None = None,
-        status: CategoryStatus | None = None,
+        category_type: Optional[CategoryType] = None,
+        status: Optional[CategoryStatus] = None,
     ) -> list[Category]:
         return self.repo.list(category_type=category_type, status=status)
 
