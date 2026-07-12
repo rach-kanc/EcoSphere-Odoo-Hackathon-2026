@@ -46,11 +46,13 @@ import EmissionFactorsTab from "./components/EmissionFactorsTab";
 import AutomationTab from "./components/AutomationTab";
 import ManualCarbonEntryModal from "./components/ManualCarbonEntryModal";
 import { carbonTransactionsApi } from "./api/carbonTransactions";
+import { environmentalGoalsApi } from "./api/environmentalGoals";
 // TypeScript types from local types file
 import {
   User,
   Department,
   CarbonTransaction,
+  EnvironmentalGoal,
   CSRActivity,
   ESGPolicy,
   ComplianceIssue,
@@ -92,6 +94,34 @@ const SOURCE_COLORS = {
   purchase: "#a855f7",       // Purple
   expense: "#f59e0b"         // Amber
 };
+
+const GOAL_STATUS_META = {
+  on_track: {
+    label: "On-track",
+    badge: "bg-emerald-950/40 text-emerald-400 border-emerald-500/20",
+    bar: "bg-emerald-500"
+  },
+  at_risk: {
+    label: "At-risk",
+    badge: "bg-amber-950/40 text-amber-400 border-amber-500/20",
+    bar: "bg-amber-500"
+  },
+  achieved: {
+    label: "Achieved",
+    badge: "bg-sky-950/40 text-sky-400 border-sky-500/20",
+    bar: "bg-sky-500"
+  },
+  missed: {
+    label: "Missed",
+    badge: "bg-rose-950/40 text-rose-400 border-rose-500/20",
+    bar: "bg-rose-500"
+  }
+};
+
+const formatNumber = (value: number, digits = 1) =>
+  new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: digits
+  }).format(value);
 
 const MOCK_PIE_DATA = [
   { name: "Fleet Vehicles", value: 1250, color: SOURCE_COLORS.fleet },
@@ -409,6 +439,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"summary" | "environmental" | "emission_factors" | "automation" | "social" | "governance" | "gamification">("summary");
   const [user, setUser] = useState<User>(MOCK_USER);
   const [transactions, setTransactions] = useState<CarbonTransaction[]>([]);
+  const [environmentalGoals, setEnvironmentalGoals] = useState<EnvironmentalGoal[]>([]);
   const [csrActivities, setCsrActivities] = useState<CSRActivity[]>(MOCK_CSR_ACTIVITIES);
   const [policies, setPolicies] = useState<ESGPolicy[]>(MOCK_POLICIES);
   const [issues, setIssues] = useState<ComplianceIssue[]>(MOCK_ISSUES);
@@ -418,11 +449,18 @@ export default function App() {
 
   const [acknowledgedPolicies, setAcknowledgedPolicies] = useState<Record<number, boolean>>({});
 
+  const loadEnvironmentalGoals = () =>
+    environmentalGoalsApi
+      .list()
+      .then(setEnvironmentalGoals)
+      .catch((err) => console.error("Failed to load environmental goals", err));
+
   useEffect(() => {
     carbonTransactionsApi
       .list()
       .then(setTransactions)
       .catch((err) => console.error("Failed to load carbon transactions", err));
+    loadEnvironmentalGoals();
   }, []);
 
   const handlePolicyAck = (id: number) => {
@@ -438,6 +476,10 @@ export default function App() {
   const activeCount = activePolicies.length;
   // Score = (acknowledged / total) * 100, capped at 100. Show 0 when no active policies.
   const gScore = activeCount > 0 ? Math.round((ackedCount / activeCount) * 1000) / 10 : 0;
+  const totalRecordedCo2e = transactions.reduce((sum, transaction) => sum + transaction.co2e, 0);
+  const activeGoalCount = environmentalGoals.filter(
+    (goal) => goal.status !== "achieved" && goal.status !== "missed"
+  ).length;
 
   if (showLanding) {
     return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
@@ -739,11 +781,68 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="glass-card p-6 rounded-2xl">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total CO₂e Recorded</p>
-                      <p className="text-3xl font-extrabold text-white mt-2">5,497.9 kg</p>
+                      <p className="text-3xl font-extrabold text-white mt-2">{formatNumber(totalRecordedCo2e)} kg</p>
                     </div>
                     <div className="glass-card p-6 rounded-2xl">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Reduction Goals</p>
-                      <p className="text-3xl font-extrabold text-white mt-2">2 Targets</p>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Sustainability Goals</p>
+                      <p className="text-3xl font-extrabold text-white mt-2">{activeGoalCount} Targets</p>
+                    </div>
+                  </div>
+
+                  <div className="glass-card rounded-2xl overflow-hidden">
+                    <div className="p-6 border-b border-brand-border flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Sustainability Goal Tracking</h3>
+                        <p className="text-xs text-gray-500 mt-1">Actual emissions are refreshed from confirmed carbon ledger entries.</p>
+                      </div>
+                      <button
+                        onClick={loadEnvironmentalGoals}
+                        className="text-xs bg-slate-900 text-gray-300 border border-brand-border px-3 py-1.5 rounded-lg font-bold hover:text-white hover:bg-slate-800 transition-colors"
+                      >
+                        Refresh
+                      </button>
+                    </div>
+                    <div className="divide-y divide-brand-border">
+                      {environmentalGoals.length === 0 ? (
+                        <div className="p-6 text-sm text-gray-400">
+                          No sustainability goals configured yet.
+                        </div>
+                      ) : (
+                        environmentalGoals.map((goal) => {
+                          const meta = GOAL_STATUS_META[goal.status] || GOAL_STATUS_META.on_track;
+                          const progress = Math.max(0, Math.min(goal.progress_pct, 100));
+                          const timeline = Math.max(0, Math.min(goal.timeline_pct, 100));
+                          return (
+                            <div key={goal.id} className="p-6 space-y-4">
+                              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                <div>
+                                  <h4 className="font-bold text-white">{goal.title}</h4>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {formatNumber(goal.current_value)} / {formatNumber(goal.target_value)} {goal.unit} by {goal.deadline}
+                                  </p>
+                                </div>
+                                <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${meta.badge}`}>
+                                  {meta.label}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="mb-2 flex items-center justify-between text-xs font-semibold text-gray-400">
+                                  <span>{formatNumber(progress)}% of target</span>
+                                  <span>{formatNumber(timeline)}% timeline elapsed</span>
+                                </div>
+                                <div className="relative h-3 w-full overflow-hidden rounded-full border border-brand-border bg-slate-950">
+                                  <div className={`h-full rounded-full ${meta.bar}`} style={{ width: `${progress}%` }} />
+                                  <div
+                                    className="absolute top-0 h-full w-px bg-white/70"
+                                    style={{ left: `${timeline}%` }}
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
 
@@ -911,7 +1010,10 @@ export default function App() {
       {showLogModal && (
         <ManualCarbonEntryModal
           onClose={() => setShowLogModal(false)}
-          onCreated={(transaction) => setTransactions((prev) => [transaction, ...prev])}
+          onCreated={(transaction) => {
+            setTransactions((prev) => [transaction, ...prev]);
+            loadEnvironmentalGoals();
+          }}
         />
       )}
     </div>

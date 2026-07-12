@@ -38,3 +38,4 @@ class EnvironmentalGoalRead(EnvironmentalGoalBase):
     # Derived, read-only fields.
     status: GoalStatus
     progress_pct: float
+    timeline_pct: float

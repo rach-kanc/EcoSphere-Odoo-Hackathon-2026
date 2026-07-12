@@ -76,3 +76,29 @@ def test_refresh_status_persists_value():
     returned = g.refresh_status(as_of=date(2025, 6, 1))
     assert returned is GoalStatus.ACHIEVED
     assert g.status is GoalStatus.ACHIEVED
+
+
+def test_emissions_budget_goal_tracks_actual_vs_timeline():
+    g = make_goal(
+        baseline_value=None,
+        target_value=1000.0,
+        current_value=650.0,
+        start_date=date(2026, 1, 1),
+        deadline=date(2026, 12, 31),
+    )
+
+    assert g.progress_pct == pytest.approx(65.0)
+    assert g.derive_status(as_of=date(2026, 7, 2)) is GoalStatus.AT_RISK
+    assert g.derive_status(as_of=date(2026, 12, 31)) is GoalStatus.ON_TRACK
+
+
+def test_emissions_budget_goal_is_missed_after_deadline_when_over_target():
+    g = make_goal(
+        baseline_value=None,
+        target_value=1000.0,
+        current_value=1001.0,
+        start_date=date(2026, 1, 1),
+        deadline=date(2026, 12, 31),
+    )
+
+    assert g.derive_status(as_of=date(2027, 1, 1)) is GoalStatus.MISSED
