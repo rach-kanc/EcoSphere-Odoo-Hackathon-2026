@@ -1,32 +1,76 @@
 """ORM models package.
 
-Importing model modules here ensures they are registered on ``Base.metadata``
-so tools like Alembic autogenerate and ``Base.metadata.create_all`` can see them.
+Importing every model module here ensures they are registered on
+``Base.metadata`` so ``Base.metadata.create_all`` and Alembic autogenerate
+can discover every table in one import.
 """
-from app.models.carbon_transaction import (  # noqa: F401
-    CarbonTransaction,
-    CreatedBy,
-    SourceType,
-    TransactionStatus,
-)
-from app.models.category import Category, CategoryStatus, CategoryType  # noqa: F401
-from app.models.department import Department  # noqa: F401
+# ── Teammate-owned models (do not modify these) ────────────────────────────
 from app.models.emission_factor import (  # noqa: F401
     ActivityType,
     EmissionFactor,
     FactorStatus,
 )
 
+# ── Your models — Department, User ────────────────────────────────────────
+from app.models.department import Department, DeptStatus  # noqa: F401
+from app.models.user import User, UserRole  # noqa: F401
+
+# ── Environmental ─────────────────────────────────────────────────────────
+from app.models.carbon_transaction import CarbonTransaction, TransactionSource  # noqa: F401
+from app.models.environmental_goal import EnvironmentalGoal, GoalStatus  # noqa: F401
+
+# ── Social ────────────────────────────────────────────────────────────────
+from app.models.csr_activity import (  # noqa: F401
+    CSRActivity,
+    ActivityStatus,
+    EmployeeParticipation,
+    ParticipationStatus,
+)
+
+# ── Governance ────────────────────────────────────────────────────────────
+from app.models.policy import ESGPolicy, PolicyType, PolicyStatus, PolicyAcknowledgement  # noqa: F401
+from app.models.audit import Audit, AuditStatus, ComplianceIssue, IssueSeverity, IssueStatus  # noqa: F401
+
+# ── Gamification ──────────────────────────────────────────────────────────
+from app.models.challenge import (  # noqa: F401
+    Challenge,
+    ChallengeDifficulty,
+    ChallengeStatus,
+    ChallengeParticipation,
+)
+from app.models.badge import Badge, BadgeRarity, UserBadge  # noqa: F401
+from app.models.reward import Reward, RewardStatus, RewardRedemption, RedemptionStatus  # noqa: F401
+
+# ── Scores & Notifications ────────────────────────────────────────────────
+from app.models.department_score import DepartmentScore  # noqa: F401
+from app.models.notification import Notification, NotificationType  # noqa: F401
+
 __all__ = [
-    "ActivityType",
-    "CarbonTransaction",
-    "Category",
-    "CategoryStatus",
-    "CategoryType",
-    "CreatedBy",
-    "Department",
-    "EmissionFactor",
-    "FactorStatus",
-    "SourceType",
-    "TransactionStatus",
+    # Emission factor (teammate)
+    "ActivityType", "EmissionFactor", "FactorStatus",
+    # Category (teammate)
+    "Category", "CategoryType", "CategoryStatus",
+    # Department & User
+    "Department", "DeptStatus",
+    "User", "UserRole",
+    # Environmental
+    "CarbonTransaction", "TransactionSource",
+    "EnvironmentalGoal", "GoalStatus",
+    # Social
+    "CSRActivity", "ActivityStatus",
+    "EmployeeParticipation", "ParticipationStatus",
+    # Governance
+    "ESGPolicy", "PolicyType", "PolicyStatus",
+    "PolicyAcknowledgement",
+    "Audit", "AuditStatus",
+    "ComplianceIssue", "IssueSeverity", "IssueStatus",
+    # Gamification
+    "Challenge", "ChallengeDifficulty", "ChallengeStatus",
+    "ChallengeParticipation",
+    "Badge", "BadgeRarity", "UserBadge",
+    "Reward", "RewardStatus",
+    "RewardRedemption", "RedemptionStatus",
+    # Scores & Notifications
+    "DepartmentScore",
+    "Notification", "NotificationType",
 ]
