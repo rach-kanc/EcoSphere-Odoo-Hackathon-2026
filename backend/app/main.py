@@ -15,6 +15,7 @@ from app.api.v1.environmental_goals import router as environmental_goals_router
 from app.api.v1.emission_factor_mappings import router as emission_factor_mappings_router
 from app.api.v1.emission_factors import router as emission_factors_router
 from app.api.v1.policies import router as policies_router
+from app.api.v1.reports import router as reports_router
 from app.api.v1.settings import router as settings_router
 
 app = FastAPI(title="EcoSphere API", version="1.0.0")
@@ -29,4 +30,5 @@ app.include_router(environmental_goals_router, prefix="/api/v1")
 app.include_router(emission_factor_mappings_router, prefix="/api/v1")
 app.include_router(emission_factors_router, prefix="/api/v1")
 app.include_router(policies_router, prefix="/api/v1")
+app.include_router(reports_router, prefix="/api/v1")
 app.include_router(settings_router, prefix="/api/v1")
