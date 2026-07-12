@@ -85,7 +85,7 @@ class CategoryService:
 
     @staticmethod
     def _ensure_social_type(category_type: CategoryType) -> None:
-        if category_type is not CategoryType.CSR_ACTIVITY:
+        if category_type not in (CategoryType.CSR_ACTIVITY, CategoryType.CHALLENGE):
             raise CategoryTypeNotAllowedError(
-                "Categories can only be created or updated with type CSR_ACTIVITY"
+                "Categories can only be created or updated with type CSR_ACTIVITY or CHALLENGE"
             )

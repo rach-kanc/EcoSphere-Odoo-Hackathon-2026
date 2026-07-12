@@ -5,7 +5,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Enum, Index, Integer, String
+from sqlalchemy import DateTime, Enum, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -48,4 +48,7 @@ class Category(Base):
 
     csr_activities: Mapped[list["CSRActivity"]] = relationship(
         "CSRActivity", back_populates="category"
+    )
+    challenges: Mapped[list["Challenge"]] = relationship(
+        "Challenge", back_populates="category"
     )

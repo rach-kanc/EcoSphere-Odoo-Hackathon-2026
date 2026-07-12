@@ -10,19 +10,12 @@ from alembic import op
 import sqlalchemy as sa
 
 revision: str = "0003_csr_activity"
-down_revision: Union[str, None] = "0002_category"
+down_revision: Union[str, None] = "0003_carbon_transaction"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.create_table(
-        "departments",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sa.String(length=255), nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
-    )
 
     op.create_table(
         "csr_activities",
@@ -78,5 +71,4 @@ def downgrade() -> None:
     op.drop_index("ix_csr_activities_department_id", table_name="csr_activities")
     op.drop_index("ix_csr_activities_category_id", table_name="csr_activities")
     op.drop_table("csr_activities")
-    op.drop_table("departments")
     sa.Enum(name="csr_activity_status").drop(op.get_bind(), checkfirst=True)
