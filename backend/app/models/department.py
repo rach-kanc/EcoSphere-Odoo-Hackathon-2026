@@ -1,5 +1,6 @@
 """Department ORM model — organisational hierarchy."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import datetime
@@ -23,10 +24,10 @@ class Department(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     code: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
-    head_id: Mapped[int | None] = mapped_column(
+    head_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    parent_id: Mapped[int | None] = mapped_column(
+    parent_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
     employee_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
@@ -40,7 +41,7 @@ class Department(Base):
     # Relationships
     users: Mapped[list["User"]] = relationship("User", back_populates="department", foreign_keys="User.department_id")  # type: ignore[name-defined]
     children: Mapped[list["Department"]] = relationship("Department", back_populates="parent", foreign_keys=[parent_id])
-    parent: Mapped["Department | None"] = relationship("Department", back_populates="children", remote_side="Department.id", foreign_keys=[parent_id])
+    parent: Mapped[Optional["Department "]] = relationship("Department", back_populates="children", remote_side="Department.id", foreign_keys=[parent_id])
     carbon_transactions: Mapped[list["CarbonTransaction"]] = relationship("CarbonTransaction", back_populates="department")  # type: ignore[name-defined]
     scores: Mapped[list["DepartmentScore"]] = relationship("DepartmentScore", back_populates="department")  # type: ignore[name-defined]
 

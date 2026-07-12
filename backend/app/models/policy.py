@@ -1,5 +1,6 @@
 """ESG Policy & Policy Acknowledgement ORM models."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import date, datetime
@@ -35,7 +36,7 @@ class ESGPolicy(Base):
     type: Mapped[PolicyType] = mapped_column(
         Enum(PolicyType, name="policy_type"), nullable=False, default=PolicyType.OTHER
     )
-    content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
     version: Mapped[str] = mapped_column(String(32), nullable=False, default="1.0")
     effective_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[PolicyStatus] = mapped_column(
@@ -70,7 +71,7 @@ class PolicyAcknowledgement(Base):
     acknowledged_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )
-    signature_text: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    signature_text: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
 
     # Relationships
     policy: Mapped["ESGPolicy"] = relationship("ESGPolicy", back_populates="acknowledgements")

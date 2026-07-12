@@ -1,11 +1,13 @@
 """CSR Activity & Employee Participation ORM models."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     Enum,
@@ -13,6 +15,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,9 +31,9 @@ class ActivityStatus(str, enum.Enum):
 
 
 class ParticipationStatus(str, enum.Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
+    PENDING = "Pending"
+    APPROVED = "Approved"
+    REJECTED = "Rejected"
 
 
 class CSRActivity(Base):
@@ -40,13 +43,13 @@ class CSRActivity(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    category_id: Mapped[int | None] = mapped_column(
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
+    category_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )
     date: Mapped[date] = mapped_column(Date, nullable=False)
-    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    max_participants: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    location: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    max_participants: Mapped[Optional[int ]] = mapped_column(Integer, nullable=True)
     xp_reward: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
     evidence_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     status: Mapped[ActivityStatus] = mapped_column(
@@ -57,7 +60,7 @@ class CSRActivity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships
-    category: Mapped["Category | None"] = relationship("Category", back_populates="csr_activities")  # type: ignore[name-defined]
+    category: Mapped[Optional["Category "]] = relationship("Category", back_populates="csr_activities")  # type: ignore[name-defined]
     participations: Mapped[list["EmployeeParticipation"]] = relationship(
         "EmployeeParticipation", back_populates="activity", cascade="all, delete-orphan"
     )
@@ -78,23 +81,54 @@ class EmployeeParticipation(Base):
     activity_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("csr_activities.id", ondelete="CASCADE"), nullable=False
     )
-    proof_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    status: Mapped[ParticipationStatus] = mapped_column(
+    proof: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    approval_status: Mapped[ParticipationStatus] = mapped_column(
         Enum(ParticipationStatus, name="participation_status"),
         nullable=False,
         default=ParticipationStatus.PENDING,
     )
     points_earned: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    completion_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    approved_by_id: Mapped[int | None] = mapped_column(
+    completion_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    approved_by_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships
-    employee: Mapped["User"] = relationship("User", foreign_keys=[employee_id])  # type: ignore[name-defined]
+    employee: Mapped["User"] = relationship("User", foreign_keys=[employee_id], back_populates="csr_participations")  # type: ignore[name-defined]
     activity: Mapped["CSRActivity"] = relationship("CSRActivity", back_populates="participations")
-    approved_by: Mapped["User | None"] = relationship("User", foreign_keys=[approved_by_id])  # type: ignore[name-defined]
+    approved_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[approved_by_id])  # type: ignore[name-defined]
+
+    __table_args__ = (
+        UniqueConstraint(
+            "employee_id",
+            "activity_id",
+            name="uq_employee_participations_employee_activity",
+        ),
+        CheckConstraint(
+            "points_earned >= 0",
+            name="ck_employee_participations_points_non_negative",
+        ),
+    )
+
+    @property
+    def proof_url(self) -> Optional[str]:
+        return self.proof
+
+    @proof_url.setter
+    def proof_url(self, value: Optional[str]) -> None:
+        self.proof = value
+
+    @property
+    def status(self) -> ParticipationStatus:
+        return self.approval_status
+
+    @status.setter
+    def status(self, value: ParticipationStatus) -> None:
+        self.approval_status = value
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<EmployeeParticipation user={self.employee_id} activity={self.activity_id} [{self.status}]>"
+        return (
+            f"<EmployeeParticipation user={self.employee_id} "
+            f"activity={self.activity_id} [{self.approval_status}]>"
+        )

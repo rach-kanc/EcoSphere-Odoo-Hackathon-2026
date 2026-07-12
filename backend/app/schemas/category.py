@@ -1,5 +1,6 @@
 """Pydantic v2 schemas for the Category resource."""
 from __future__ import annotations
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,9 +18,9 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryUpdate(BaseModel):
-    name: str | None = Field(None, max_length=255)
-    type: CategoryType | None = None
-    status: CategoryStatus | None = None
+    name: Optional[str] = Field(None, max_length=255)
+    type: Optional[CategoryType] = None
+    status: Optional[CategoryStatus] = None
 
 
 class CategoryRead(CategoryBase):

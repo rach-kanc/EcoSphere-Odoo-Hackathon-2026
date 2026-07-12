@@ -1,5 +1,6 @@
 """Challenge & ChallengeParticipation ORM models — gamification core."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import date, datetime
@@ -62,8 +63,8 @@ class Challenge(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    category_id: Mapped[int | None] = mapped_column(
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
+    category_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True
     )
     xp_reward: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
@@ -72,14 +73,14 @@ class Challenge(Base):
         nullable=False,
         default=ChallengeDifficulty.MEDIUM,
     )
-    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    deadline: Mapped[Optional[date ]] = mapped_column(Date, nullable=True)
     evidence_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     status: Mapped[ChallengeStatus] = mapped_column(
         Enum(ChallengeStatus, name="challenge_status"),
         nullable=False,
         default=ChallengeStatus.DRAFT,
     )
-    created_by_id: Mapped[int | None] = mapped_column(
+    created_by_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
@@ -88,8 +89,8 @@ class Challenge(Base):
     )
 
     # Relationships
-    category: Mapped["Category | None"] = relationship("Category", back_populates="challenges")  # type: ignore[name-defined]
-    created_by: Mapped["User | None"] = relationship("User", foreign_keys=[created_by_id])  # type: ignore[name-defined]
+    category: Mapped[Optional["Category "]] = relationship("Category", back_populates="challenges")  # type: ignore[name-defined]
+    created_by: Mapped[Optional["User "]] = relationship("User", foreign_keys=[created_by_id])  # type: ignore[name-defined]
     participations: Mapped[list["ChallengeParticipation"]] = relationship(
         "ChallengeParticipation",
         back_populates="challenge",
@@ -121,15 +122,15 @@ class ChallengeParticipation(Base):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     progress: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 0–100
-    proof_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    proof_url: Mapped[Optional[str ]] = mapped_column(String(512), nullable=True)
     status: Mapped[ParticipationStatus] = mapped_column(
         Enum(ParticipationStatus, name="challenge_participation_status"),
         nullable=False,
         default=ParticipationStatus.IN_PROGRESS,
     )
     xp_awarded: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    approved_by_id: Mapped[int | None] = mapped_column(
+    submitted_at: Mapped[Optional[datetime ]] = mapped_column(DateTime, nullable=True)
+    approved_by_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
@@ -137,7 +138,7 @@ class ChallengeParticipation(Base):
     # Relationships
     challenge: Mapped["Challenge"] = relationship("Challenge", back_populates="participations")
     employee: Mapped["User"] = relationship("User", foreign_keys=[employee_id], back_populates="challenge_participations")  # type: ignore[name-defined]
-    approved_by: Mapped["User | None"] = relationship("User", foreign_keys=[approved_by_id])  # type: ignore[name-defined]
+    approved_by: Mapped[Optional["User "]] = relationship("User", foreign_keys=[approved_by_id])  # type: ignore[name-defined]
 
     def __repr__(self) -> str:  # pragma: no cover
         return (

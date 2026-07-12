@@ -1,5 +1,6 @@
 """Audit & Compliance Issue ORM models."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import date, datetime
@@ -40,19 +41,19 @@ class Audit(Base):
     auditor_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )
-    department_id: Mapped[int | None] = mapped_column(
+    department_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
     date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[AuditStatus] = mapped_column(
         Enum(AuditStatus, name="audit_status"), nullable=False, default=AuditStatus.PLANNED
     )
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships
     auditor: Mapped["User"] = relationship("User", foreign_keys=[auditor_id])  # type: ignore[name-defined]
-    department: Mapped["Department | None"] = relationship("Department")  # type: ignore[name-defined]
+    department: Mapped[Optional["Department "]] = relationship("Department")  # type: ignore[name-defined]
     compliance_issues: Mapped[list["ComplianceIssue"]] = relationship(
         "ComplianceIssue", back_populates="audit", cascade="all, delete-orphan"
     )
@@ -71,7 +72,7 @@ class ComplianceIssue(Base):
         Integer, ForeignKey("audits.id", ondelete="CASCADE"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
     severity: Mapped[IssueSeverity] = mapped_column(
         Enum(IssueSeverity, name="issue_severity"), nullable=False, default=IssueSeverity.MEDIUM
     )

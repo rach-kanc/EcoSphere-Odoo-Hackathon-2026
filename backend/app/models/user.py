@@ -1,5 +1,6 @@
 """User ORM model — authentication, roles, and gamification XP."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import datetime
@@ -30,7 +31,7 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="user_role"), nullable=False, default=UserRole.EMPLOYEE
     )
-    department_id: Mapped[int | None] = mapped_column(
+    department_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -51,6 +52,7 @@ class User(Base):
     badges: Mapped[list["UserBadge"]] = relationship("UserBadge", back_populates="user", cascade="all, delete-orphan")  # type: ignore[name-defined]
     reward_redemptions: Mapped[list["RewardRedemption"]] = relationship("RewardRedemption", back_populates="employee", foreign_keys="RewardRedemption.employee_id")  # type: ignore[name-defined]
     challenge_participations: Mapped[list["ChallengeParticipation"]] = relationship("ChallengeParticipation", back_populates="employee", foreign_keys="ChallengeParticipation.employee_id")  # type: ignore[name-defined]
+    csr_participations: Mapped[list["EmployeeParticipation"]] = relationship("EmployeeParticipation", back_populates="employee", foreign_keys="EmployeeParticipation.employee_id")  # type: ignore[name-defined]
     notifications: Mapped[list["Notification"]] = relationship("Notification", back_populates="recipient", foreign_keys="Notification.recipient_id")  # type: ignore[name-defined]
 
     def __repr__(self) -> str:  # pragma: no cover

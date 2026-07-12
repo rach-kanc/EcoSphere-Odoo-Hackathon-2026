@@ -1,5 +1,6 @@
 """Data access helpers for Category records."""
 from __future__ import annotations
+from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -13,8 +14,8 @@ class CategoryRepository:
     def list(
         self,
         *,
-        category_type: CategoryType | None = None,
-        status: CategoryStatus | None = None,
+        category_type: Optional[CategoryType] = None,
+        status: Optional[CategoryStatus] = None,
     ) -> list[Category]:
         query = self.db.query(Category)
         if category_type is not None:
@@ -23,12 +24,12 @@ class CategoryRepository:
             query = query.filter(Category.status == status)
         return query.order_by(Category.name.asc(), Category.id.asc()).all()
 
-    def get(self, category_id: int) -> Category | None:
+    def get(self, category_id: int) -> Optional[Category]:
         return self.db.get(Category, category_id)
 
     def get_by_name_and_type(
         self, name: str, category_type: CategoryType
-    ) -> Category | None:
+    ) -> Optional[Category]:
         return (
             self.db.query(Category)
             .filter(Category.name == name, Category.type == category_type)

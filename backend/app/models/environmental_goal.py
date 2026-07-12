@@ -1,5 +1,6 @@
 """Environmental Goal ORM model — sustainability targets with progress tracking."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import date, datetime
@@ -28,15 +29,15 @@ class EnvironmentalGoal(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    department_id: Mapped[int | None] = mapped_column(
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
+    department_id: Mapped[Optional[int ]] = mapped_column(
         Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True
     )
     # Numeric target — e.g. 500 (kgCO2e), 20 (%), 1000 (kWh)
     target_value: Mapped[float] = mapped_column(Float, nullable=False)
     current_value: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     unit: Mapped[str] = mapped_column(String(32), nullable=False)  # e.g. "kgCO2e", "%", "kWh"
-    baseline_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    baseline_value: Mapped[Optional[float ]] = mapped_column(Float, nullable=True)
     deadline: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[GoalStatus] = mapped_column(
         Enum(GoalStatus, name="goal_status"), nullable=False, default=GoalStatus.ON_TRACK
@@ -49,7 +50,7 @@ class EnvironmentalGoal(Base):
     )
 
     # Relationships
-    department: Mapped["Department | None"] = relationship("Department")  # type: ignore[name-defined]
+    department: Mapped[Optional["Department "]] = relationship("Department")  # type: ignore[name-defined]
 
     @property
     def progress_pct(self) -> float:

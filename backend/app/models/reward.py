@@ -1,5 +1,6 @@
 """Reward & RewardRedemption ORM models — gamification store."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import datetime
@@ -33,8 +34,8 @@ class Reward(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    icon_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
+    icon_url: Mapped[Optional[str ]] = mapped_column(String(512), nullable=True)
     points_required: Mapped[int] = mapped_column(Integer, nullable=False)
     stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     status: Mapped[RewardStatus] = mapped_column(

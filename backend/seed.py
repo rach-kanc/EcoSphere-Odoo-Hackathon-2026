@@ -27,7 +27,7 @@ from app.models.user import User, UserRole
 from app.models.department import Department, DeptStatus
 from app.models.category import Category, CategoryType, CategoryStatus
 from app.models.emission_factor import EmissionFactor, ActivityType
-from app.models.carbon_transaction import CarbonTransaction, TransactionSource
+from app.models.carbon_transaction import CarbonTransaction, SourceType, CreatedBy, TransactionStatus
 from app.models.environmental_goal import EnvironmentalGoal, GoalStatus
 from app.models.csr_activity import CSRActivity, ActivityStatus, EmployeeParticipation, ParticipationStatus
 from app.models.policy import ESGPolicy, PolicyType, PolicyStatus, PolicyAcknowledgement
@@ -172,27 +172,85 @@ def seed() -> None:
 
         # ── Carbon Transactions ───────────────────────────────────────────────
         txns = [
-            CarbonTransaction(department_id=depts["ENG"].id, emission_factor_id=ef_elec.id,
-                source=TransactionSource.MANUAL, quantity=5200, calculated_emission=4264.0,
-                date=TODAY - timedelta(days=150), notes="Server room Q1"),
-            CarbonTransaction(department_id=depts["ENG"].id, emission_factor_id=ef_elec.id,
-                source=TransactionSource.MANUAL, quantity=4800, calculated_emission=3936.0,
-                date=TODAY - timedelta(days=90)),
-            CarbonTransaction(department_id=depts["ENG"].id, emission_factor_id=ef_elec.id,
-                source=TransactionSource.MANUAL, quantity=4100, calculated_emission=3362.0,
-                date=TODAY - timedelta(days=30)),
-            CarbonTransaction(department_id=depts["OPS"].id, emission_factor_id=ef_diesel.id,
-                source=TransactionSource.FLEET, quantity=800, calculated_emission=2144.0,
-                date=TODAY - timedelta(days=120)),
-            CarbonTransaction(department_id=depts["OPS"].id, emission_factor_id=ef_diesel.id,
-                source=TransactionSource.FLEET, quantity=650, calculated_emission=1742.0,
-                date=TODAY - timedelta(days=60)),
-            CarbonTransaction(department_id=depts["FIN"].id, emission_factor_id=ef_air.id,
-                source=TransactionSource.EXPENSE, quantity=12000, calculated_emission=1800.0,
-                date=TODAY - timedelta(days=100), notes="Q1 client visits"),
-            CarbonTransaction(department_id=depts["SCM"].id, emission_factor_id=ef_waste.id,
-                source=TransactionSource.MANUAL, quantity=2000, calculated_emission=900.0,
-                date=TODAY - timedelta(days=45)),
+            CarbonTransaction(
+                department_id=depts["ENG"].id,
+                emission_factor_id=ef_elec.id,
+                source_type=SourceType.EXPENSE,
+                quantity=5200,
+                co2e=4264.0,
+                factor_value=ef_elec.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=150),
+                source_reference="Server room Q1",
+                created_by=CreatedBy.MANUAL,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["ENG"].id,
+                emission_factor_id=ef_elec.id,
+                source_type=SourceType.EXPENSE,
+                quantity=4800,
+                co2e=3936.0,
+                factor_value=ef_elec.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=90),
+                created_by=CreatedBy.MANUAL,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["ENG"].id,
+                emission_factor_id=ef_elec.id,
+                source_type=SourceType.EXPENSE,
+                quantity=4100,
+                co2e=3362.0,
+                factor_value=ef_elec.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=30),
+                created_by=CreatedBy.MANUAL,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["OPS"].id,
+                emission_factor_id=ef_diesel.id,
+                source_type=SourceType.FLEET,
+                quantity=800,
+                co2e=2144.0,
+                factor_value=ef_diesel.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=120),
+                created_by=CreatedBy.AUTO,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["OPS"].id,
+                emission_factor_id=ef_diesel.id,
+                source_type=SourceType.FLEET,
+                quantity=650,
+                co2e=1742.0,
+                factor_value=ef_diesel.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=60),
+                created_by=CreatedBy.AUTO,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["FIN"].id,
+                emission_factor_id=ef_air.id,
+                source_type=SourceType.EXPENSE,
+                quantity=12000,
+                co2e=1800.0,
+                factor_value=ef_air.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=100),
+                source_reference="Q1 client visits",
+                created_by=CreatedBy.AUTO,
+                status=TransactionStatus.CONFIRMED,
+            ),
+            CarbonTransaction(
+                department_id=depts["SCM"].id,
+                emission_factor_id=ef_waste.id,
+                source_type=SourceType.EXPENSE,
+                quantity=2000,
+                co2e=900.0,
+                factor_value=ef_waste.co2e_per_unit,
+                transaction_date=TODAY - timedelta(days=45),
+                created_by=CreatedBy.MANUAL,
+                status=TransactionStatus.CONFIRMED,
+            ),
         ]
         for t in txns:
             db.add(t)

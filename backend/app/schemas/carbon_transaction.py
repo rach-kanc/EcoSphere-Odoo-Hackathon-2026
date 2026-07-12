@@ -1,5 +1,6 @@
 """Pydantic v2 schemas for the CarbonTransaction resource."""
 from __future__ import annotations
+from typing import Optional
 
 from datetime import date
 
@@ -15,12 +16,12 @@ class CarbonTransactionCreateAuto(BaseModel):
     accepted here. Supply either ``emission_factor_id`` or ``factor_code``.
     """
 
-    department_id: int | None = None
+    department_id: Optional[int] = None
     source_type: SourceType
-    source_record_id: int | None = None
-    source_reference: str | None = Field(None, max_length=255)
-    emission_factor_id: int | None = None
-    factor_code: str | None = Field(None, max_length=64)
+    source_record_id: Optional[int] = None
+    source_reference: Optional[str] = Field(None, max_length=255)
+    emission_factor_id: Optional[int] = None
+    factor_code: Optional[str] = Field(None, max_length=64)
     quantity: float = Field(..., ge=0)
     transaction_date: date
 
@@ -29,10 +30,10 @@ class CarbonTransactionRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    department_id: int | None
+    department_id: Optional[int]
     source_type: SourceType
-    source_record_id: int | None
-    source_reference: str | None
+    source_record_id: Optional[int]
+    source_reference: Optional[str]
     emission_factor_id: int
     quantity: float
     co2e: float

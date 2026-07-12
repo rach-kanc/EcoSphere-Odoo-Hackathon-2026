@@ -1,5 +1,6 @@
 """Notification ORM model — in-app alerts for key platform events."""
 from __future__ import annotations
+from typing import Optional
 
 import enum
 from datetime import datetime
@@ -38,10 +39,10 @@ class Notification(Base):
         default=NotificationType.GENERAL,
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    message: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     # Polymorphic reference to the related object (e.g. challenge id, badge id)
-    related_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    related_id: Mapped[Optional[int ]] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships
