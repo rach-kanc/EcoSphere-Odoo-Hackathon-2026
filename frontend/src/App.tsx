@@ -473,30 +473,12 @@ export default function App() {
     loadEnvironmentalGoals();
   }, []);
 
-  // Play startup sound when the site is opened
-  useEffect(() => {
+  // Audio will be played on user interaction (entering dashboard)
+  const playStartupSound = () => {
     const audio = new Audio("/resources/startup.mp3");
     audio.volume = 0.6;
-
-    const playAudio = () => {
-      audio.play().catch(() => {
-        // Autoplay blocked — wait for first user interaction
-        const resumeOnInteraction = () => {
-          audio.play().catch(() => {});
-          window.removeEventListener("click", resumeOnInteraction);
-          window.removeEventListener("keydown", resumeOnInteraction);
-        };
-        window.addEventListener("click", resumeOnInteraction);
-        window.addEventListener("keydown", resumeOnInteraction);
-      });
-    };
-
-    playAudio();
-
-    return () => {
-      audio.pause();
-    };
-  }, []);
+    audio.play().catch(e => console.log("Audio play failed:", e));
+  };
 
   const handlePolicyAck = (id: number) => {
     setAcknowledgedPolicies((prev) => ({ ...prev, [id]: true }));
@@ -521,7 +503,10 @@ export default function App() {
   ).length;
 
   if (showLanding) {
-    return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
+    return <LandingPage onEnterDashboard={() => {
+      playStartupSound();
+      setShowLanding(false);
+    }} />;
   }
 
   return (
