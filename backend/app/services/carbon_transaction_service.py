@@ -15,7 +15,7 @@ from app.models.carbon_transaction import (
 from app.models.department import Department
 from app.models.emission_factor import EmissionFactor
 from app.repositories.carbon_transaction_repository import CarbonTransactionRepository
-from app.schemas.carbon_transaction import CarbonTransactionCreateManual
+from app.schemas.carbon_transaction import CarbonTransactionCreateManual, DepartmentCarbonSummary
 
 
 class CarbonTransactionError(Exception):
@@ -50,6 +50,26 @@ class CarbonTransactionService:
             date_from=date_from,
             date_to=date_to,
         )
+
+    def summarize_by_department(
+        self,
+        *,
+        source_type: Optional[SourceType] = None,
+        date_from: Optional[date] = None,
+        date_to: Optional[date] = None,
+    ) -> list[DepartmentCarbonSummary]:
+        rows = self.repo.aggregate_by_department(
+            source_type=source_type, date_from=date_from, date_to=date_to
+        )
+        return [
+            DepartmentCarbonSummary(
+                department_id=department_id,
+                department_name=department_name,
+                transaction_count=count,
+                total_co2e=total_co2e,
+            )
+            for department_id, department_name, count, total_co2e in rows
+        ]
 
     def get_transaction(self, transaction_id: int) -> CarbonTransaction:
         transaction = self.repo.get(transaction_id)

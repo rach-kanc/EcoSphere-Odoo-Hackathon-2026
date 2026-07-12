@@ -9,7 +9,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.carbon_transaction import SourceType, TransactionStatus
-from app.schemas.carbon_transaction import CarbonTransactionCreateManual, CarbonTransactionRead
+from app.schemas.carbon_transaction import (
+    CarbonTransactionCreateManual,
+    CarbonTransactionRead,
+    DepartmentCarbonSummary,
+)
 from app.services.carbon_transaction_service import (
     CarbonTransactionNotFoundError,
     CarbonTransactionService,
@@ -38,6 +42,23 @@ def list_carbon_transactions(
         status=status_filter,
         date_from=date_from,
         date_to=date_to,
+    )
+
+
+@router.get("/summary/by-department", response_model=list[DepartmentCarbonSummary])
+def summarize_carbon_transactions_by_department(
+    source_type: Optional[SourceType] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    service: CarbonTransactionService = Depends(get_carbon_transaction_service),
+):
+    """Aggregated CO2e totals per department (issue #8).
+
+    Drill-down to the underlying transactions uses the existing
+    ``GET /carbon-transactions?department_id=...`` list endpoint.
+    """
+    return service.summarize_by_department(
+        source_type=source_type, date_from=date_from, date_to=date_to
     )
 
 
