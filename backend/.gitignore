@@ -8,3 +8,5 @@ venv/
 # Local database & env
 *.db
 .env
+.env*
+*.bak
